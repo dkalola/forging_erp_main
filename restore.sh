@@ -7,9 +7,20 @@ REPO_URL="https://github.com/dkalola/forging_erp.git"
 SITE_NAME="frontend"  # Your ERPNext site name
 DB_PASSWORD="admin"   # Default database password
 
-# Path to your frappe_docker directory containing compose.yaml / docker-compose.yml
-# Change this if your folder is named or located differently
-DOCKER_DIR="$HOME/frappe_docker"
+# Get the directory where this script is located
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Dynamically locate or clone the frappe_docker directory
+if [ -d "$SCRIPT_DIR/../frappe_docker" ]; then
+    DOCKER_DIR="$SCRIPT_DIR/../frappe_docker"
+elif [ -d "$SCRIPT_DIR/frappe_docker" ]; then
+    DOCKER_DIR="$SCRIPT_DIR/frappe_docker"
+else
+    echo "⚠️ 'frappe_docker' directory not found. Cloning it..."
+    cd "$SCRIPT_DIR" || exit 1
+    git clone https://github.com/frappe/frappe_docker.git
+    DOCKER_DIR="$SCRIPT_DIR/frappe_docker"
+fi
 
 echo "=========================================="
 echo "Starting ERPNext & Custom App Restoration"
@@ -18,12 +29,7 @@ echo "=========================================="
 # Step 1: Navigate to Docker directory and ensure containers are running
 if [ ! "$(docker ps -q -f name=$CONTAINER_NAME)" ]; then
     echo "⚠️ Containers are not running. Starting Docker Compose..."
-    if [ -d "$DOCKER_DIR" ]; then
-        cd "$DOCKER_DIR" || exit 1
-    else
-        echo "❌ Error: Docker directory '$DOCKER_DIR' not found."
-        exit 1
-    fi
+    cd "$DOCKER_DIR" || exit 1
 
     if [ -f "compose.yaml" ] || [ -f "docker-compose.yml" ]; then
         docker compose up -d
