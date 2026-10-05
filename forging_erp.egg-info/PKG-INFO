@@ -1,0 +1,9 @@
+Metadata-Version: 2.4
+Name: forging_erp
+Version: 0.0.1
+Summary: Forging ERP
+Author: Author
+Author-email: admin@example.com
+Dynamic: author
+Dynamic: author-email
+Dynamic: summary

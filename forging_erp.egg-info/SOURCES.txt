@@ -1,0 +1,9 @@
+pyproject.toml
+setup.py
+forging_erp/__init__.py
+forging_erp/hooks.py
+forging_erp.egg-info/PKG-INFO
+forging_erp.egg-info/SOURCES.txt
+forging_erp.egg-info/dependency_links.txt
+forging_erp.egg-info/not-zip-safe
+forging_erp.egg-info/top_level.txt
