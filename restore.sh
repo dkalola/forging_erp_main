@@ -32,7 +32,7 @@ if [ ! "$(docker ps -q -f name=$CONTAINER_NAME)" ]; then
     cd "$DOCKER_DIR" || exit 1
 
     if [ -f "compose.yaml" ] || [ -f "docker-compose.yml" ]; then
-        docker compose up -d
+        docker-compose up -d
     else
         echo "❌ Error: Docker compose file not found in $DOCKER_DIR."
         exit 1
@@ -90,8 +90,8 @@ docker exec -it "$CONTAINER_NAME" bench build
 
 # Step 6: Restart containers to refresh background queues and web workers
 echo "-> Restarting containers to apply changes..."
-cd "$DOCKER_DIR" && docker compose down
-cd "$DOCKER_DIR" && docker compose up -d
+cd "$DOCKER_DIR" && docker-compose down
+cd "$DOCKER_DIR" && docker-compose up -d
 
 echo "=========================================="
 echo "✅ Everything restored and running successfully!"
