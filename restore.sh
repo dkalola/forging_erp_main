@@ -22,6 +22,19 @@ else
     DOCKER_DIR="$SCRIPT_DIR/frappe_docker"
 fi
 
+# Ensure .env file exists for frappe_docker
+if [ ! -f "$DOCKER_DIR/.env" ]; then
+    echo "⚠️ .env file missing in frappe_docker. Generating one..."
+    cd "$DOCKER_DIR" || exit 1
+    if [ -f "example.env" ]; then
+        cp example.env .env
+        # Default to v15 if not set
+        echo "ERPNEXT_VERSION=v15" >> .env
+    else
+        echo "ERPNEXT_VERSION=v15" > .env
+    fi
+fi
+
 echo "=========================================="
 echo "Starting ERPNext & Custom App Restoration"
 echo "=========================================="
@@ -37,10 +50,9 @@ if [ ! "$(docker ps -q -f name=$CONTAINER_NAME)" ]; then
         echo "❌ Error: Docker compose file not found in $DOCKER_DIR."
         exit 1
     fi
-    echo "-> Waiting for containers to initialize..."
-    sleep 10
+    echo "-> Waiting for containers to initialize (this may take a minute)..."
+    sleep 20  # Give enough time for images to download and boot up
 else
-    # Make sure we are in the docker directory for later compose commands
     cd "$DOCKER_DIR" || exit 1
 fi
 
@@ -50,9 +62,7 @@ SITE_EXISTS=$(docker exec -it "$CONTAINER_NAME" bash -c "test -f /home/frappe/fr
 SITE_EXISTS=$(echo "$SITE_EXISTS" | tr -d '\r')
 
 if [ "$SITE_EXISTS" != "yes" ]; then
-    echo "⚠️ Site '$SITE_NAME' not found. Initializing fresh site..."
-    
-    # Give database a moment to be completely healthy
+    echo "⚠️️ Site '$SITE_NAME' not found. Initializing fresh site..."
     sleep 5
 
     docker exec -it "$CONTAINER_NAME" bench new-site "$SITE_NAME" \
