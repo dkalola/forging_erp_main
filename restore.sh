@@ -7,21 +7,35 @@ REPO_URL="https://github.com/dkalola/forging_erp.git"
 SITE_NAME="frontend"  # Your ERPNext site name
 DB_PASSWORD="admin"   # Default database password
 
+# Path to your frappe_docker directory containing compose.yaml / docker-compose.yml
+# Change this if your folder is named or located differently
+DOCKER_DIR="$HOME/frappe_docker"
+
 echo "=========================================="
 echo "Starting ERPNext & Custom App Restoration"
 echo "=========================================="
 
-# Step 1: Ensure Docker containers are running
+# Step 1: Navigate to Docker directory and ensure containers are running
 if [ ! "$(docker ps -q -f name=$CONTAINER_NAME)" ]; then
     echo "⚠️ Containers are not running. Starting Docker Compose..."
+    if [ -d "$DOCKER_DIR" ]; then
+        cd "$DOCKER_DIR" || exit 1
+    else
+        echo "❌ Error: Docker directory '$DOCKER_DIR' not found."
+        exit 1
+    fi
+
     if [ -f "compose.yaml" ] || [ -f "docker-compose.yml" ]; then
         docker compose up -d
     else
-        echo "❌ Error: Docker compose file not found. Make sure you are in your frappe_docker directory."
+        echo "❌ Error: Docker compose file not found in $DOCKER_DIR."
         exit 1
     fi
     echo "-> Waiting for containers to initialize..."
     sleep 10
+else
+    # Make sure we are in the docker directory for later compose commands
+    cd "$DOCKER_DIR" || exit 1
 fi
 
 # Step 2: Check if the ERPNext site is initialized
@@ -70,8 +84,8 @@ docker exec -it "$CONTAINER_NAME" bench build
 
 # Step 6: Restart containers to refresh background queues and web workers
 echo "-> Restarting containers to apply changes..."
-docker compose down
-docker compose up -d
+cd "$DOCKER_DIR" && docker compose down
+cd "$DOCKER_DIR" && docker compose up -d
 
 echo "=========================================="
 echo "✅ Everything restored and running successfully!"
